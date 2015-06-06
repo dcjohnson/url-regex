@@ -1,0 +1,19 @@
+{
+  "name": "url-regex",
+  "version": "1.0.0",
+  "description": "A regex library for url routing.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcjohnson/url-regex.git"
+  },
+  "author": "Dylan Conrad Johnson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dcjohnson/url-regex/issues"
+  },
+  "homepage": "https://github.com/dcjohnson/url-regex#readme"
+}
