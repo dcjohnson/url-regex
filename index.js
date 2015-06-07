@@ -35,10 +35,9 @@ Ndfa.prototype.generateStates = function() {
 	this.startState = new State(false);
 
 	var curState = this.startState;
-	var validator = new ValidateRegex(true);
 
 	for (var index = 0; index < this.regex.length; index++) {
-		if(validator.isValid(this.regex[index])) {
+		if(this.validate.isValid(this.regex[index])) {
 			var newState = new State(false);
 			curState.addTransition(this.regex[index], newState);
 			curState = newState;
@@ -72,45 +71,41 @@ Ndfa.prototype.testString = function(str) {
 	return isValid;
 };
 
-ValidateRegex = function(shouldDefault) {
-	this.validationFuncs = [];
-	if(shouldDefault) {
-		this.setupDefaults();
-	}
-};
-
-ValidateRegex.prototype.setupDefaults = function() {
-	this.validationFuncs.push(function(char) {
+Ndfa.prototype.validate = (function() {
+	this.validationFuncs = [
+		function(char) {
 		var charCast = char.charCodeAt(0);
 		var diff = '9'.charCodeAt(0) - charCast;
 		return 9 >= diff && diff >= 0;
-	});
-	this.validationFuncs.push(function(char) {
-		var charCast = char.charCodeAt(0);
-		var diff = 'z'.charCodeAt(0) - charCast;
-		return 25 >= diff && diff >= 0;
-	});
-	this.validationFuncs.push(function(char) {
-		var charCast = char.charCodeAt(0);
-		var diff = 'Z'.charCodeAt(0) - charCast;
-		return 25 >= diff && diff >= 0;
-	});
-	this.validationFuncs.push(function(char) {
-		return char === '-' || char === '_'
-			char === '.' || char === '~';
-	});
-};
-
-ValidateRegex.prototype.isValid = function(char) {
-	var valid = false;
-	for(var index = 0; index < this.validationFuncs.length; index++) {
-		valid = valid || this.validationFuncs[index](char);
+		},
+		function(char) {
+			var charCast = char.charCodeAt(0);
+			var diff = 'z'.charCodeAt(0) - charCast;
+			return 25 >= diff && diff >= 0;
+		},
+		function(char) {
+			var charCast = char.charCodeAt(0);
+			var diff = 'Z'.charCodeAt(0) - charCast;
+			return 25 >= diff && diff >= 0;
+		},
+		function(char) {
+			return char === '-' || char === '_'
+				char === '.' || char === '~';
+		}
+	];
+	return {
+		isValid: function(char) {
+			var valid = false;
+			for(var index = 0; index < validationFuncs.length; index++) {
+				valid = valid || validationFuncs[index](char);
+			}
+			return valid;
+		}
 	}
-	return valid;
-}
+})();
 
 exports.Ndfa = Ndfa;
 
 var x = new Ndfa('abc');
 x.generateStates();
-console.log(x.testString('abcza'));
+console.log(x.testString('abcc'));
