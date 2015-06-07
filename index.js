@@ -66,7 +66,7 @@ Ndfa.prototype.testString = function(str) {
 			curState = newState;
 		}
 	}
-	if(curState.isTerm) {
+	if(curState.isTerm && newState != null) {
 		isValid = true;
 	}
 	return isValid;
@@ -113,4 +113,4 @@ exports.Ndfa = Ndfa;
 
 var x = new Ndfa('abc');
 x.generateStates();
-console.log(x.testString('abz'));
+console.log(x.testString('abcza'));
