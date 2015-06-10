@@ -41,13 +41,25 @@ Ndfa.prototype.generateStates = function() {
 			var newState = new State(false);
 			curState.addTransition(this.regex[index], newState);
 			curState = newState;
+		} else if(this.regex[index] === '[') {
+			var loopLen = this.getLoopLength(this.regex.substr(index));
+			var loop = this.regex.substr(index, loopLen);
 		}
 	}
 	curState.isTerm = true;
 };
 
 Ndfa.prototype.getLoopLength = function(str) {
-
+	var stackDepth = 0;
+	var index = 0;
+	do {
+		if(str[index] === '[') {
+			stackDepth += 1;
+		} else if (str[index] === ']') {
+			stackDepth -= 1;
+		}
+		index += 1;
+	} while(stackDepth > 0 && index < str.length);
 };
 
 Ndfa.prototype.processLoop = function(loop) {
@@ -101,7 +113,7 @@ Ndfa.prototype.validate = (function() {
 			}
 			return valid;
 		}
-	}
+	};
 })();
 
 exports.Ndfa = Ndfa;
