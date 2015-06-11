@@ -4,6 +4,9 @@ State = function (isTerm, transitions) {
 	if(typeof transitions !== 'undefined') {
 		this.transitions = this.transitions.concat(transitions);
 	}
+	if(typeof isTerm !== 'undefined') {
+		this.isTerm = false;
+	}
 };
 
 State.prototype.transition = function (transVal) {
@@ -32,13 +35,13 @@ Ndfa = function (regex) {
 };
 
 Ndfa.prototype.generateStates = function() {
-	this.startState = new State(false);
+	this.startState = new State();
 
 	var curState = this.startState;
 
 	for (var index = 0; index < this.regex.length; index++) {
 		if(this.validate.isValid(this.regex[index])) {
-			var newState = new State(false);
+			var newState = new State();
 			curState.addTransition(this.regex[index], newState);
 			curState = newState;
 		} else if(this.regex[index] === '[') {
@@ -63,6 +66,7 @@ Ndfa.prototype.getLoopLength = function(str) {
 };
 
 Ndfa.prototype.processLoop = function(loop) {
+	var state = new State();
 	for(var index = 0; index < loop.length; index++) {
 		if(loop[index] === '[') {
 			var loopLen = this.getLoopLength(loop.subStr(index));
