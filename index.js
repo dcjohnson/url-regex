@@ -43,7 +43,7 @@ Ndfa.prototype.generateStates = function() {
 			curState = newState;
 		} else if(this.regex[index] === '[') {
 			var loopLen = this.getLoopLength(this.regex.substr(index));
-			var loop = this.regex.substr(index, loopLen);
+			var loop = this.regex.substr(index + 1, loopLen - 2);
 		}
 	}
 	curState.isTerm = true;
@@ -63,8 +63,27 @@ Ndfa.prototype.getLoopLength = function(str) {
 };
 
 Ndfa.prototype.processLoop = function(loop) {
+	for(var index = 0; index < loop.length; index++) {
+		if(loop[index] === '[') {
+			var loopLen = this.getLoopLength(loop.subStr(index));
+			var subLoop = loop.substr(loop + 1, loopLen - 2);
+		}
+	}
+};
+
+Ndfa.prototype.resolveAmbiguity = function(last, first) { // Prevent the creation of an NDFA!
 
 };
+
+Ndfa.prototype.getRange = function(lower, upper) {
+	var chars = []
+	var upperNum = upper.charCodeAt(0);
+	var lowerNum = lower.charCodeAt(0);
+	for(var char = lowerNum; char <= upperNum; char++) {
+		chars.push(String.fromCharCode(char));
+	}
+	return chars;
+}
 
 Ndfa.prototype.testString = function(str) {
 	var isValid = false;
@@ -121,3 +140,4 @@ exports.Ndfa = Ndfa;
 var x = new Ndfa('abc');
 x.generateStates();
 console.log(x.testString('abcc'));
+console.log(x.getRange('a', '6'));
