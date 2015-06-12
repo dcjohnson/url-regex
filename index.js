@@ -44,15 +44,22 @@ Ndfa.prototype.generateStates = function() {
 			var newState = new State();
 			curState.addTransition(this.regex[index], newState);
 			curState = newState;
-		} else if(this.regex[index] === '[') {
-			var loopLen = this.getLoopLength(this.regex.substr(index));
-			var loop = this.regex.substr(index + 1, loopLen - 2);
+		} else if(this.regex[index] === '(') {
+
+			var loopLen = this.getEnumLength(this.regex.substring(index));
+			var loop = this.regex.substr(index + 1, loopLen - 1);
+			var newState = this.getEnumState(loop, curState);
+			curState = newState;
+			index += loopLen;
 		}
 	}
 	curState.isTerm = true;
 };
 
 Ndfa.prototype.getLoopLength = function(str) {
+	if(str[0] !== '[') {
+		return null;
+	}
 	var stackDepth = 0;
 	var index = 0;
 	do {
@@ -63,9 +70,45 @@ Ndfa.prototype.getLoopLength = function(str) {
 		}
 		index += 1;
 	} while(stackDepth > 0 && index < str.length);
+	if(index === str.length) {
+		return null;
+	}
+	return index;
 };
 
-Ndfa.prototype.processLoop = function(loop) {
+Ndfa.prototype.getEnumLength = function(str) {
+	if(str[0] !== '(') {
+		return null;
+	}
+
+	var index = 0;
+	while(str[index] !== ')') {
+		if(str.length === index) {
+			return null;
+		}
+		index += 1;
+	}
+	return index;
+}
+
+Ndfa.prototype.getEnumState = function(str, initialState) {
+	var substrArray = str.split('|');
+	for(var index = 0; index < substrArray.length; index++) {
+		if(substrArray[index].length !== 1) {
+			return null;
+		}
+	}
+
+	var state = new State();
+
+	substrArray.forEach(function(element, index, array) {
+		initialState.addTransition(element, state);
+	});
+
+	return state;
+}
+
+Ndfa.prototype.processLoop = function(loop) { // Not finished.
 	var state = new State();
 	for(var index = 0; index < loop.length; index++) {
 		if(loop[index] === '[') {
@@ -73,6 +116,10 @@ Ndfa.prototype.processLoop = function(loop) {
 			var subLoop = loop.substr(loop + 1, loopLen - 2);
 		}
 	}
+};
+
+Ndfa.prototype.checkAmbiguity = function(last, first) {
+
 };
 
 Ndfa.prototype.resolveAmbiguity = function(last, first) { // Prevent the creation of an NDFA!
@@ -124,8 +171,9 @@ Ndfa.prototype.validate = (function() {
 			return 25 >= diff && diff >= 0;
 		},
 		function(char) {
-			return char === '-' || char === '_'
-				char === '.' || char === '~';
+			return char === '-' || char === '_' ||
+				char === '.' || char === '~' ||
+				char === '%';
 		}
 	];
 	return {
@@ -141,7 +189,8 @@ Ndfa.prototype.validate = (function() {
 
 exports.Ndfa = Ndfa;
 
-var x = new Ndfa('abc');
+var x = new Ndfa('_-(a|b)c');
 x.generateStates();
-console.log(x.testString('abcc'));
-console.log(x.getRange('a', '6'));
+console.log(x.testString('_-ac'));
+console.log(x.testString('_-ba'));
+console.log(x.testString('_-dc'));
