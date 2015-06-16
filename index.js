@@ -19,11 +19,23 @@ State.prototype.transition = function (transVal) {
 };
 
 State.prototype.addTransition = function(transVal, state) {
-	this.transitions.push({
-		state : state,
-		transVal : transVal
-	});
+	if(!this.hasTransition(transVal)) {
+		this.transitions.push({
+			state : state,
+			transVal : transVal
+		});
+	}
 };
+
+State.prototype.hasTransition = function(transVal) {
+	for(var index = 0; index < this.transitions.length; index++) {
+		if(this.transitions[index].transVal === transVal) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 State.prototype.transCount = function() {
 	return this.transitions.length;
@@ -45,12 +57,13 @@ Ndfa.prototype.generateStates = function() {
 			curState.addTransition(this.regex[index], newState);
 			curState = newState;
 		} else if(this.regex[index] === '(') {
-
 			var loopLen = this.getEnumLength(this.regex.substring(index));
 			var loop = this.regex.substr(index + 1, loopLen - 1);
 			var newState = this.getEnumState(loop, curState);
 			curState = newState;
 			index += loopLen;
+		} else if(this.regex[index] === '[') {
+			
 		}
 	}
 	curState.isTerm = true;
@@ -189,8 +202,10 @@ Ndfa.prototype.validate = (function() {
 
 exports.Ndfa = Ndfa;
 
-var x = new Ndfa('_-(a|b)c');
+var x = new Ndfa('_-(a|b|~|a)c(a|b|e)');
 x.generateStates();
-console.log(x.testString('_-ac'));
+console.log(x.testString('_-~ce'));
+console.log(x.testString('_-aca'))
+console.log(x.testString('-bc'))
 console.log(x.testString('_-ba'));
 console.log(x.testString('_-dc'));
