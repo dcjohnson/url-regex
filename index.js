@@ -58,16 +58,22 @@ Ndfa.prototype.generateStates = function() {
 			curState = newState;
 		} else if(this.regex[index] === '(') {
 			var enumLen = this.getEnumLength(this.regex.substring(index));
-			var enumeration = this.regex.substr(index + 1, enumLen - 1);
-			var newState = this.getEnumState(enumeration, curState);
-			curState = newState;
+			var enumeration = this.extract(this.regex, index, enumLen);
+			curState = this.getEnumState(enumeration, curState);
 			index += enumLen;
 		} else if(this.regex[index] === '[') {
-
+			var loopLen = this.getLoopLength(this.regex.substring(index));
+			var loop = this.extract(this.regex, index, loopLen);
+			curState = this.processLoop(loop, curState);
+			index += enumLen;
 		}
 	}
 	curState.isTerm = true;
 };
+
+Ndfa.prototype.extract = function(str, index, extractionLen) {
+	return this.regex.substr(index + 1, extractionLen - 1);
+}
 
 Ndfa.prototype.getLoopLength = function(str) {
 	if(str[0] !== '[') {
@@ -121,7 +127,7 @@ Ndfa.prototype.getEnumState = function(str, initialState) {
 	return state;
 }
 
-Ndfa.prototype.processLoop = function(loop) { // Not finished.
+Ndfa.prototype.processLoop = function(loop, curState) { // Not finished.
 	var state = new State();
 	for(var index = 0; index < loop.length; index++) {
 		if(loop[index] === '[') {
@@ -129,10 +135,6 @@ Ndfa.prototype.processLoop = function(loop) { // Not finished.
 			var subLoop = loop.substr(loop + 1, loopLen - 2);
 		}
 	}
-};
-
-Ndfa.prototype.checkAmbiguity = function(lastState, firstState) {
-
 };
 
 Ndfa.prototype.resolveAmbiguity = function(lastState, firstState) { // Prevent the creation of an NDFA!
@@ -206,6 +208,6 @@ var x = new Ndfa('_-(a|b|~|c)c(c|b|e)');
 x.generateStates();
 console.log(x.testString('_-~ce'));
 console.log(x.testString('_-ccb'))
-console.log(x.testString('_-cda'))
-console.log(x.testString('_-ba'));
+console.log(x.testString('_-cdb'))
+console.log(x.testString('_-bcb'));
 console.log(x.testString('_-dc'));
