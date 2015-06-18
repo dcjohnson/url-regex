@@ -141,16 +141,6 @@ Ndfa.prototype.resolveAmbiguity = function(lastState, firstState) { // Prevent t
 
 };
 
-Ndfa.prototype.getRange = function(lower, upper) {
-	var chars = []
-	var upperNum = upper.charCodeAt(0);
-	var lowerNum = lower.charCodeAt(0);
-	for(var char = lowerNum; char <= upperNum; char++) {
-		chars.push(String.fromCharCode(char));
-	}
-	return chars;
-}
-
 Ndfa.prototype.testString = function(str) {
 	var isValid = false;
 	var curState = this.startState;
@@ -169,11 +159,11 @@ Ndfa.prototype.testString = function(str) {
 };
 
 Ndfa.prototype.validate = (function() {
-	this.validationFuncs = [
+	this.validateRangeable = [
 		function(char) {
-		var charCast = char.charCodeAt(0);
-		var diff = '9'.charCodeAt(0) - charCast;
-		return 9 >= diff && diff >= 0;
+			var charCast = char.charCodeAt(0);
+			var diff = '9'.charCodeAt(0) - charCast;
+			return 9 >= diff && diff >= 0;
 		},
 		function(char) {
 			var charCast = char.charCodeAt(0);
@@ -184,7 +174,10 @@ Ndfa.prototype.validate = (function() {
 			var charCast = char.charCodeAt(0);
 			var diff = 'Z'.charCodeAt(0) - charCast;
 			return 25 >= diff && diff >= 0;
-		},
+		}
+	];
+
+	this.validateUnRangeable = [
 		function(char) {
 			return char === '-' || char === '_' ||
 				char === '.' || char === '~' ||
@@ -193,11 +186,37 @@ Ndfa.prototype.validate = (function() {
 	];
 	return {
 		isValid: function(char) {
+			var validationFuncs = validateRangeable.concat(validateUnRangeable);
 			var valid = false;
 			for(var index = 0; index < validationFuncs.length; index++) {
 				valid = valid || validationFuncs[index](char);
 			}
 			return valid;
+		},
+		getRange: function(bound1, bound2) {
+			var valid = false;
+			for(var index = 0; index < validateRangeable.length; index++) {
+				valid = valid || (validateRangeable[index](bound1) && validateRangeable[index](bound2));
+			}
+			if(!valid) {
+				return null;
+			}
+			var bound1Int = bound1.charCodeAt(0);
+			var bound2Int = bound2.charCodeAt(0);
+			var charRange = [];
+			if(bound1Int > bound2Int) {
+				var begin = bound2Int;
+				var end = bound1Int;
+			} else {
+				var begin = bound1Int;
+				var end = bound2Int;
+			}
+
+			for(var char = begin; char <= end; char++) {
+				charRange.push(String.fromCharCode(char));
+			}
+
+			return charRange;
 		}
 	};
 })();
@@ -211,3 +230,4 @@ console.log(x.testString('_-ccb'))
 console.log(x.testString('_-cdb'))
 console.log(x.testString('_-bcb'));
 console.log(x.testString('_-dc'));
+console.log(x.validate.getRange('Z', 'A'));
