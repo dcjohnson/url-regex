@@ -27,6 +27,12 @@ State.prototype.addTransition = function(transVal, state) {
     }
 };
 
+State.prototype.addTransitions = function(transVals, state) {
+    transVals.forEach(function(elem, index, array) {
+        this.addTransition(elem, state);
+    });
+};
+
 State.prototype.hasTransition = function(transVal) {
     for(var index = 0; index < this.transitions.length; index++) {
         if(this.transitions[index].transVal === transVal) {
@@ -101,9 +107,28 @@ Ndfa.prototype.getLoopLength = function(str) {
     return index;
 };
 
-Ndfa.prototype.processLoop = function(loop, curState) { // Not finished.
-    var state = new State();
+Ndfa.prototype.processLoop = function(loop, curState) {
     var trans = loop.split('|');
+
+    for(var index = 0; index < trans.length; index++) {
+        var notValid = (trans[index].length !== 1 || trans[index].length !== 2) && this.validate.isValid(trans[index])
+        if(trans) {
+            return null;
+        }
+    }
+
+    var state = new State();
+
+    trans.forEach(function(elem, index, array) {
+        if(elem.length === 1) {
+            initialState.addTransition(element, state);
+            state.addTransition(element, state);
+        } else {
+            var range = validate.getRange(elem.charAt(0), elem.charAt(1));
+            initialState.addTransitions(range, state)
+            state.addTransitions(range, state);
+        }
+    });
 };
 
 Ndfa.prototype.getEnumLength = function(str) {
@@ -122,16 +147,17 @@ Ndfa.prototype.getEnumLength = function(str) {
 };
 
 Ndfa.prototype.getEnumState = function(str, initialState) {
-    var substrArray = str.split('|');
-    for(var index = 0; index < substrArray.length; index++) {
-        if(substrArray[index].length !== 1 || !this.validate.isValid(substrArray[index])) {
+    var trans = str.split('|');
+    for(var index = 0; index < trans.length; index++) {
+        var notValid = trans[index].length !== 1 || !this.validate.isValid(trans[index])
+        if(notValid) {
             return null;
         }
     }
 
     var state = new State();
 
-    substrArray.forEach(function(element, index, array) {
+    trans.forEach(function(element, index, array) {
         initialState.addTransition(element, state);
     });
 
@@ -186,11 +212,13 @@ Ndfa.prototype.validate = (function() {
         }
     ];
     return {
-        isValid: function(char) {
+        isValid: function(str) {
             var validationFuncs = validateRangeable.concat(validateUnRangeable);
             var valid = false;
             for(var index = 0; index < validationFuncs.length; index++) {
-                valid = valid || validationFuncs[index](char);
+                for(var charIndex = 0; charIndex < str.length; charIndex++) {
+                    valid = valid || validationFuncs[index](str.charAt(charIndex));
+                }
             }
             return valid;
         },
