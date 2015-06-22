@@ -4,7 +4,7 @@ State = function (isTerm, transitions) {
     if(typeof transitions !== 'undefined') {
         this.transitions = this.transitions.concat(transitions);
     }
-    if(typeof isTerm !== 'undefined') {
+    if(typeof isTerm === 'undefined') {
         this.isTerm = false;
     }
 };
@@ -28,8 +28,9 @@ State.prototype.addTransition = function(transVal, state) {
 };
 
 State.prototype.addTransitions = function(transVals, state) {
+    var base = this;
     transVals.forEach(function(elem, index, array) {
-        this.addTransition(elem, state);
+        base.addTransition(elem, state);
     });
 };
 
@@ -76,7 +77,7 @@ Ndfa.prototype.generateStates = function() {
             var newState = this.processLoop(loop, curState);
             if(newState !== null) {
                 curState = newState;
-                index += enumLen;
+                index += loopLen;
             }
         }
     }
@@ -91,44 +92,42 @@ Ndfa.prototype.getLoopLength = function(str) {
     if(str[0] !== '[') {
         return null;
     }
-    var stackDepth = 0;
+
     var index = 0;
-    do {
-        if(str[index] === '[') {
-            stackDepth += 1;
-        } else if (str[index] === ']') {
-            stackDepth -= 1;
+    while(str[index] !== ']') {
+        if(str.length === index) {
+            return null;
         }
         index += 1;
-    } while(stackDepth > 0 && index < str.length);
-    if(index === str.length) {
-        return null;
     }
     return index;
 };
 
-Ndfa.prototype.processLoop = function(loop, curState) {
+Ndfa.prototype.processLoop = function(loop, initialState) {
     var trans = loop.split('|');
 
     for(var index = 0; index < trans.length; index++) {
-        var notValid = (trans[index].length !== 1 || trans[index].length !== 2) && this.validate.isValid(trans[index])
-        if(trans) {
+        var notValid = (trans[index].length !== 1 || trans[index].length !== 2) && !this.validate.isValid(trans[index])
+        if(notValid) {
             return null;
         }
     }
 
     var state = new State();
+    var base = this;
 
     trans.forEach(function(elem, index, array) {
         if(elem.length === 1) {
-            initialState.addTransition(element, state);
-            state.addTransition(element, state);
+            initialState.addTransition(elem, state);
+            state.addTransition(elem, state);
         } else {
-            var range = validate.getRange(elem.charAt(0), elem.charAt(1));
+            var range = base.validate.getRange(elem.charAt(0), elem.charAt(1));
             initialState.addTransitions(range, state)
             state.addTransitions(range, state);
         }
     });
+
+    return state
 };
 
 Ndfa.prototype.getEnumLength = function(str) {
@@ -143,6 +142,7 @@ Ndfa.prototype.getEnumLength = function(str) {
         }
         index += 1;
     }
+
     return index;
 };
 
@@ -169,20 +169,14 @@ Ndfa.prototype.resolveAmbiguity = function(lastState, firstState) { // Prevent t
 };
 
 Ndfa.prototype.testString = function(str) {
-    var isValid = false;
     var curState = this.startState;
     for(var index = 0; index < str.length; index++) {
-        var newState = curState.transition(str[index]);
-        if(newState === null) {
+        curState = curState.transition(str[index]);
+        if(curState === null) {
             break;
-        } else {
-            curState = newState;
         }
     }
-    if(curState.isTerm && newState != null) {
-        isValid = true;
-    }
-    return isValid;
+    return curState !== null && curState.isTerm;
 };
 
 Ndfa.prototype.validate = (function() {
@@ -252,11 +246,10 @@ Ndfa.prototype.validate = (function() {
 
 exports.Ndfa = Ndfa;
 
-var x = new Ndfa('_-(a|b|e|c)c(c|b|e)');
+var x = new Ndfa('_-(a|b|e|c)[-|ac](q|z|e)');
 x.generateStates();
 console.log(x.testString('_-~ce'));
-console.log(x.testString('_-ccb'))
+console.log(x.testString('_-ccz'))
 console.log(x.testString('_-cdb'))
 console.log(x.testString('_-bcb'));
-console.log(x.testString('_-cc'));
-console.log(x.validate.getRange('Z', 'A'));
+console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-q'));
