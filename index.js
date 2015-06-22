@@ -1,8 +1,8 @@
 State = function (isTerm, transitions) {
     this.isTerm = isTerm;
-    this.transitions = [];
-    if(typeof transitions !== 'undefined') {
-        this.transitions = this.transitions.concat(transitions);
+    this.transitions = transitions;
+    if(typeof transitions === 'undefined') {
+        this.transitions = [];
     }
     if(typeof isTerm === 'undefined') {
         this.isTerm = false;
