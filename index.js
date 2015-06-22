@@ -224,15 +224,12 @@ Ndfa.prototype.validate = (function() {
             if(!valid) {
                 return null;
             }
-            var bound1Int = bound1.charCodeAt(0);
-            var bound2Int = bound2.charCodeAt(0);
+            var begin = bound1.charCodeAt(0);
+            var end = bound2.charCodeAt(0);
             var charRange = [];
-            if(bound1Int > bound2Int) {
-                var begin = bound2Int;
-                var end = bound1Int;
-            } else {
-                var begin = bound1Int;
-                var end = bound2Int;
+            if(begin > end) {
+                begin = bound2Int;
+                end = bound1Int;
             }
 
             for(var char = begin; char <= end; char++) {
