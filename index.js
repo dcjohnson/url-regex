@@ -37,9 +37,7 @@ State.prototype.addTransition = function(transVal, state) {
         selfTransitions.forEach(function(value) {
             state.addTransition(value.transVal, value.state);
         });
-        state.addTransition(transVal, this);
-    } else {
-        this.updateTransition(transVal, transVal, state);
+        state.addTransition(transVal, state);
     }
 };
 
@@ -280,4 +278,6 @@ console.log(x.testString('_-~ce'));
 console.log(x.testString('_-ccz'))
 console.log(x.testString('_-cdb'))
 console.log(x.testString('_=bcc'));
-console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-ze'));
+console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-c'));
+console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-cc'));
+console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-cc-----z'));
