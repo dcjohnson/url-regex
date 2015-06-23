@@ -13,7 +13,7 @@ State = function (isTerm, transitions) {
     if(typeof isTerm === 'undefined') {
         this.isTerm = false;
     }
-};
+}
 
 State.prototype.transition = function (transVal) {
     for(var index = 0; index < this.transCount(); index++) {
@@ -22,7 +22,7 @@ State.prototype.transition = function (transVal) {
         }
     }
     return null;
-};
+}
 
 State.prototype.addTransition = function(transVal, state) {
     var hasTrans = this.getTransition(transVal);
@@ -39,14 +39,14 @@ State.prototype.addTransition = function(transVal, state) {
         });
         state.addTransition(transVal, state);
     }
-};
+}
 
 State.prototype.getSelfTransitions = function() {
     var base = this;
     return this.transitions.filter(function(value) {
         return value.state === base;
     });
-};
+}
 
 State.prototype.updateTransition = function(transVal, newTransVal, newState) {
     for(var index = 0; index < this.transitions.length; index++) {
@@ -57,14 +57,14 @@ State.prototype.updateTransition = function(transVal, newTransVal, newState) {
             };
         }
     }
-};
+}
 
 State.prototype.addTransitions = function(transVals, state) {
     var base = this;
     transVals.forEach(function(elem, index, array) {
         base.addTransition(elem, state);
     });
-};
+}
 
 State.prototype.getTransition = function(transVal) {
     for(var index = 0; index < this.transitions.length; index++) {
@@ -74,11 +74,11 @@ State.prototype.getTransition = function(transVal) {
     }
 
     return null;
-};
+}
 
 State.prototype.transCount = function() {
     return this.transitions.length;
-};
+}
 
 Ndfa = function (regex) {
     this.startState = null;
@@ -86,7 +86,7 @@ Ndfa = function (regex) {
     if(typeof regex === 'undefined') {
         this.regex = "";
     }
-};
+}
 
 Ndfa.prototype.generateStates = function() {
     this.startState = new State();
@@ -116,11 +116,11 @@ Ndfa.prototype.generateStates = function() {
         }
     }
     curState.isTerm = true;
-};
+}
 
 Ndfa.prototype.extract = function(str, index, extractionLen) {
     return this.regex.substr(index + 1, extractionLen - 1);
-};
+}
 
 Ndfa.prototype.getLoopLength = function(str) {
     if(str[0] !== '[') {
@@ -135,7 +135,7 @@ Ndfa.prototype.getLoopLength = function(str) {
         index += 1;
     }
     return index;
-};
+}
 
 Ndfa.prototype.processLoop = function(loop, initialState) {
     var trans = loop.split('|');
@@ -162,7 +162,7 @@ Ndfa.prototype.processLoop = function(loop, initialState) {
     });
 
     return state
-};
+}
 
 Ndfa.prototype.getEnumLength = function(str) {
     if(str[0] !== '(') {
@@ -178,7 +178,7 @@ Ndfa.prototype.getEnumLength = function(str) {
     }
 
     return index;
-};
+}
 
 Ndfa.prototype.getEnumState = function(str, initialState) {
     var trans = str.split('|');
@@ -195,7 +195,7 @@ Ndfa.prototype.getEnumState = function(str, initialState) {
     });
 
     return state;
-};
+}
 
 Ndfa.prototype.testString = function(str) {
     var curState = this.startState;
@@ -206,7 +206,7 @@ Ndfa.prototype.testString = function(str) {
         }
     }
     return curState !== null && curState.isTerm;
-};
+}
 
 Ndfa.prototype.validate = (function() {
     this.validateRangeable = [
