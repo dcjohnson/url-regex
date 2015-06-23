@@ -271,13 +271,3 @@ Ndfa.prototype.validate = (function() {
 })();
 
 exports.Ndfa = Ndfa;
-
-var x = new Ndfa('_-(a|b|e|c)[-|ac](c|z|e)');
-x.generateStates();
-console.log(x.testString('_-~ce'));
-console.log(x.testString('_-ccz'))
-console.log(x.testString('_-cdb'))
-console.log(x.testString('_=bcc'));
-console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-c'));
-console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-cc'));
-console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-cc-----z'));
