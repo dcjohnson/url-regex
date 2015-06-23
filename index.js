@@ -57,7 +57,7 @@ State.prototype.updateTransition = function(transVal, newTransVal, newState) {
             };
         }
     }
-}
+};
 
 State.prototype.addTransitions = function(transVals, state) {
     var base = this;
@@ -74,7 +74,7 @@ State.prototype.getTransition = function(transVal) {
     }
 
     return null;
-}
+};
 
 State.prototype.transCount = function() {
     return this.transitions.length;
@@ -120,7 +120,7 @@ Ndfa.prototype.generateStates = function() {
 
 Ndfa.prototype.extract = function(str, index, extractionLen) {
     return this.regex.substr(index + 1, extractionLen - 1);
-}
+};
 
 Ndfa.prototype.getLoopLength = function(str) {
     if(str[0] !== '[') {
