@@ -1,3 +1,9 @@
+// This node library follows some rules that I think are very reasonable.  Basically it doesn't work on a url that is stupidly complex.
+// There is no need for a url to contain nested loops or enumerations.  The restrictions also mean that loops are the only place where ambiguity, and thus, an NDFA could occur.
+// This library takes this into account and will resolve it for you.
+// I also need to rewrite this so that it follows better design with JavaScript.
+// This is the first reasonable complex JavaScript program I have written.  The only real issue is how I handle errors.
+
 State = function (isTerm, transitions) {
     this.isTerm = isTerm;
     this.transitions = transitions;
@@ -19,13 +25,41 @@ State.prototype.transition = function (transVal) {
 };
 
 State.prototype.addTransition = function(transVal, state) {
-    if(!this.hasTransition(transVal)) {
+    var hasTrans = this.getTransition(transVal);
+    if(hasTrans === null) {
         this.transitions.push({
             state : state,
             transVal : transVal
         });
+    } else if(this === hasTrans.state) {
+        this.updateTransition(transVal, transVal, state);
+        var selfTransitions = this.getSelfTransitions();
+        selfTransitions.forEach(function(value) {
+            state.addTransition(value.transVal, value.state);
+        });
+        state.addTransition(transVal, this);
+    } else {
+        this.updateTransition(transVal, transVal, state);
     }
 };
+
+State.prototype.getSelfTransitions = function() {
+    var base = this;
+    return this.transitions.filter(function(value) {
+        return value.state === base;
+    });
+};
+
+State.prototype.updateTransition = function(transVal, newTransVal, newState) {
+    for(var index = 0; index < this.transitions.length; index++) {
+        if(this.transitions[index].transVal === transVal) {
+            this.transitions[index] = {
+                state : newState,
+                transVal : newTransVal
+            };
+        }
+    }
+}
 
 State.prototype.addTransitions = function(transVals, state) {
     var base = this;
@@ -34,14 +68,14 @@ State.prototype.addTransitions = function(transVals, state) {
     });
 };
 
-State.prototype.hasTransition = function(transVal) {
+State.prototype.getTransition = function(transVal) {
     for(var index = 0; index < this.transitions.length; index++) {
         if(this.transitions[index].transVal === transVal) {
-            return true;
+            return this.transitions[index];
         }
     }
 
-    return false;
+    return null;
 }
 
 State.prototype.transCount = function() {
@@ -51,11 +85,13 @@ State.prototype.transCount = function() {
 Ndfa = function (regex) {
     this.startState = null;
     this.regex = regex;
+    if(typeof regex === 'undefined') {
+        this.regex = "";
+    }
 };
 
 Ndfa.prototype.generateStates = function() {
     this.startState = new State();
-
     var curState = this.startState;
 
     for (var index = 0; index < this.regex.length; index++) {
@@ -156,16 +192,11 @@ Ndfa.prototype.getEnumState = function(str, initialState) {
     }
 
     var state = new State();
-
     trans.forEach(function(element, index, array) {
         initialState.addTransition(element, state);
     });
 
     return state;
-};
-
-Ndfa.prototype.resolveAmbiguity = function(lastState, firstState) { // Prevent the creation of an NDFA!
-
 };
 
 Ndfa.prototype.testString = function(str) {
@@ -243,10 +274,10 @@ Ndfa.prototype.validate = (function() {
 
 exports.Ndfa = Ndfa;
 
-var x = new Ndfa('_-(a|b|e|c)[-|ac](q|z|e)');
+var x = new Ndfa('_-(a|b|e|c)[-|ac](c|z|e)');
 x.generateStates();
 console.log(x.testString('_-~ce'));
 console.log(x.testString('_-ccz'))
 console.log(x.testString('_-cdb'))
-console.log(x.testString('_-bcb'));
-console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-q'));
+console.log(x.testString('_=bcc'));
+console.log(x.testString('_-ccacacacacacaccacaca-----a-ca-c-a-c-ac-ze'));
