@@ -4,20 +4,20 @@
 // I also need to rewrite this so that it follows better design with JavaScript.
 // This is the first reasonable complex JavaScript program I have written.  The only real issue is how I handle errors.
 
-State = function (isTerm, transitions) {
+State = function(isTerm, transitions) {
     this.isTerm = isTerm;
     this.transitions = transitions;
-    if(typeof transitions === 'undefined') {
+    if (typeof transitions === 'undefined') {
         this.transitions = [];
     }
-    if(typeof isTerm === 'undefined') {
+    if (typeof isTerm === 'undefined') {
         this.isTerm = false;
     }
 }
 
-State.prototype.transition = function (transVal) {
-    for(var index = 0; index < this.transCount(); index++) {
-        if(transVal === this.transitions[index].transVal) {
+State.prototype.transition = function(transVal) {
+    for (var index = 0; index < this.transCount(); index++) {
+        if (transVal === this.transitions[index].transVal) {
             return this.transitions[index].state;
         }
     }
@@ -26,12 +26,12 @@ State.prototype.transition = function (transVal) {
 
 State.prototype.addTransition = function(transVal, state) {
     var hasTrans = this.getTransition(transVal);
-    if(hasTrans === null) {
+    if (hasTrans === null) {
         this.transitions.push({
-            state : state,
-            transVal : transVal
+            state: state,
+            transVal: transVal
         });
-    } else if(this === hasTrans.state) {
+    } else if (this === hasTrans.state) {
         this.updateTransition(transVal, transVal, state);
         var selfTransitions = this.getSelfTransitions();
         selfTransitions.forEach(function(value) {
@@ -49,11 +49,11 @@ State.prototype.getSelfTransitions = function() {
 }
 
 State.prototype.updateTransition = function(transVal, newTransVal, newState) {
-    for(var index = 0; index < this.transitions.length; index++) {
-        if(this.transitions[index].transVal === transVal) {
+    for (var index = 0; index < this.transitions.length; index++) {
+        if (this.transitions[index].transVal === transVal) {
             this.transitions[index] = {
-                state : newState,
-                transVal : newTransVal
+                state: newState,
+                transVal: newTransVal
             };
         }
     }
@@ -67,8 +67,8 @@ State.prototype.addTransitions = function(transVals, state) {
 }
 
 State.prototype.getTransition = function(transVal) {
-    for(var index = 0; index < this.transitions.length; index++) {
-        if(this.transitions[index].transVal === transVal) {
+    for (var index = 0; index < this.transitions.length; index++) {
+        if (this.transitions[index].transVal === transVal) {
             return this.transitions[index];
         }
     }
@@ -80,10 +80,10 @@ State.prototype.transCount = function() {
     return this.transitions.length;
 }
 
-Ndfa = function (regex) {
+Ndfa = function(regex) {
     this.startState = null;
     this.regex = regex;
-    if(typeof regex === 'undefined') {
+    if (typeof regex === 'undefined') {
         this.regex = "";
     }
 }
@@ -93,23 +93,23 @@ Ndfa.prototype.generateStates = function() {
     var curState = this.startState;
 
     for (var index = 0; index < this.regex.length; index++) {
-        if(this.validate.isValid(this.regex[index])) {
+        if (this.validate.isValid(this.regex[index])) {
             var newState = new State();
             curState.addTransition(this.regex[index], newState);
             curState = newState;
-        } else if(this.regex[index] === '(') {
+        } else if (this.regex[index] === '(') {
             var enumLen = this.getEnumLength(this.regex.substring(index));
             var enumeration = this.extract(this.regex, index, enumLen);
             var newState = this.getEnumState(enumeration, curState);
-            if(newState !== null) {
+            if (newState !== null) {
                 curState = newState;
                 index += enumLen;
             }
-        } else if(this.regex[index] === '[') {
+        } else if (this.regex[index] === '[') {
             var loopLen = this.getLoopLength(this.regex.substring(index));
             var loop = this.extract(this.regex, index, loopLen);
             var newState = this.processLoop(loop, curState);
-            if(newState !== null) {
+            if (newState !== null) {
                 curState = newState;
                 index += loopLen;
             }
@@ -123,13 +123,13 @@ Ndfa.prototype.extract = function(str, index, extractionLen) {
 }
 
 Ndfa.prototype.getLoopLength = function(str) {
-    if(str[0] !== '[') {
+    if (str[0] !== '[') {
         return null;
     }
 
     var index = 0;
-    while(str[index] !== ']') {
-        if(str.length === index) {
+    while (str[index] !== ']') {
+        if (str.length === index) {
             return null;
         }
         index += 1;
@@ -140,9 +140,9 @@ Ndfa.prototype.getLoopLength = function(str) {
 Ndfa.prototype.processLoop = function(loop, initialState) {
     var trans = loop.split('|');
 
-    for(var index = 0; index < trans.length; index++) {
+    for (var index = 0; index < trans.length; index++) {
         var notValid = (trans[index].length !== 1 || trans[index].length !== 2) && !this.validate.isValid(trans[index])
-        if(notValid) {
+        if (notValid) {
             return null;
         }
     }
@@ -151,7 +151,7 @@ Ndfa.prototype.processLoop = function(loop, initialState) {
     var base = this;
 
     trans.forEach(function(elem, index, array) {
-        if(elem.length === 1) {
+        if (elem.length === 1) {
             initialState.addTransition(elem, state);
             state.addTransition(elem, state);
         } else {
@@ -165,13 +165,13 @@ Ndfa.prototype.processLoop = function(loop, initialState) {
 }
 
 Ndfa.prototype.getEnumLength = function(str) {
-    if(str[0] !== '(') {
+    if (str[0] !== '(') {
         return null;
     }
 
     var index = 0;
-    while(str[index] !== ')') {
-        if(str.length === index) {
+    while (str[index] !== ')') {
+        if (str.length === index) {
             return null;
         }
         index += 1;
@@ -182,9 +182,9 @@ Ndfa.prototype.getEnumLength = function(str) {
 
 Ndfa.prototype.getEnumState = function(str, initialState) {
     var trans = str.split('|');
-    for(var index = 0; index < trans.length; index++) {
+    for (var index = 0; index < trans.length; index++) {
         var notValid = trans[index].length !== 1 || !this.validate.isValid(trans[index])
-        if(notValid) {
+        if (notValid) {
             return null;
         }
     }
@@ -199,9 +199,9 @@ Ndfa.prototype.getEnumState = function(str, initialState) {
 
 Ndfa.prototype.testString = function(str) {
     var curState = this.startState;
-    for(var index = 0; index < str.length; index++) {
+    for (var index = 0; index < str.length; index++) {
         curState = curState.transition(str[index]);
-        if(curState === null) {
+        if (curState === null) {
             break;
         }
     }
@@ -234,40 +234,70 @@ Ndfa.prototype.validate = (function() {
                 char === '%';
         }
     ];
+
+    this.validateOperators = function(char) {
+        return char === '[' || char === ']' ||
+            char === '(' || char === ')' ||
+            char === '|';
+    };
+
     return {
         isValid: function(str) {
             var validationFuncs = validateRangeable.concat(validateUnRangeable);
             var valid = false;
-            for(var index = 0; index < validationFuncs.length; index++) {
-                for(var charIndex = 0; charIndex < str.length; charIndex++) {
+            for (var index = 0; index < validationFuncs.length; index++) {
+                for (var charIndex = 0; charIndex < str.length; charIndex++) {
                     valid = valid || validationFuncs[index](str.charAt(charIndex));
                 }
             }
             return valid;
         },
         getRange: function(bound1, bound2) {
-            var valid = false;
-            for(var index = 0; index < validateRangeable.length; index++) {
-                valid = valid || (validateRangeable[index](bound1) && validateRangeable[index](bound2));
-            }
-            if(!valid) {
-                return null;
-            }
             var begin = bound1.charCodeAt(0);
             var end = bound2.charCodeAt(0);
             var charRange = [];
-            if(begin > end) {
+            if (begin > end) {
                 begin = bound2Int;
                 end = bound1Int;
             }
 
-            for(var char = begin; char <= end; char++) {
+            for (var char = begin; char <= end; char++) {
                 charRange.push(String.fromCharCode(char));
             }
 
             return charRange;
+        },
+        canRange: function(bound1, bound2) {
+            var valid = false;
+            for (var index = 0; index < validateRangeable.length; index++) {
+                valid = valid || (validateRangeable[index](bound1) && validateRangeable[index](bound2));
+            }
+            return valid;
+        },
+        isValidRegex: function(regex) {
+            var valid = true;
+
+            for(var index = 0; index < regex.length; index++) {
+                var isValid = this.isValid(regex[index]);
+                var isOperator = validateOperators(regex[index]);
+                valid = isValid || isOperator;
+                if(!valid) {
+                    break;
+                }
+            }
+
+            // if(valid) {
+            //
+            // }
+
+            return valid;
         }
     };
 })();
 
 exports.Ndfa = Ndfa;
+var n = new Ndfa('abc');
+console.log(n.validate.isValidRegex('abc'));
+console.log(n.validate.isValidRegex('abcab[=]e'));
+console.log(n.validate.isValidRegex('abc[]aed'));
+console.log(n.validate.isValidRegex('abc[aeefsd]eee()aaa'));
