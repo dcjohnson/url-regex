@@ -209,31 +209,29 @@ Ndfa.prototype.testString = function(str) {
 }
 
 Ndfa.prototype.validate = (function() {
-    this.validateRangeable = [
-        function(char) {
-            var charCast = char.charCodeAt(0);
-            var diff = '9'.charCodeAt(0) - charCast;
-            return 9 >= diff && diff >= 0;
-        },
-        function(char) {
-            var charCast = char.charCodeAt(0);
-            var diff = 'z'.charCodeAt(0) - charCast;
-            return 25 >= diff && diff >= 0;
-        },
-        function(char) {
-            var charCast = char.charCodeAt(0);
-            var diff = 'Z'.charCodeAt(0) - charCast;
-            return 25 >= diff && diff >= 0;
-        }
-    ];
+    this.validateRangeableDigit = function(char) {
+        var charCast = char.charCodeAt(0);
+        var diff = '9'.charCodeAt(0) - charCast;
+        return 9 >= diff && diff >= 0;
+    };
 
-    this.validateUnRangeable = [
-        function(char) {
-            return char === '-' || char === '_' ||
-                char === '.' || char === '~' ||
-                char === '%';
-        }
-    ];
+    this.validateRangeableLowerCase = function(char) {
+        var charCast = char.charCodeAt(0);
+        var diff = 'z'.charCodeAt(0) - charCast;
+        return 25 >= diff && diff >= 0;
+    };
+
+    this.validateRangeableUpperCase = function(char) {
+        var charCast = char.charCodeAt(0);
+        var diff = 'Z'.charCodeAt(0) - charCast;
+        return 25 >= diff && diff >= 0;
+    };
+
+    this.validateUnRangeable = function(char) {
+        return char === '-' || char === '_' ||
+            char === '.' || char === '~' ||
+            char === '%';
+    };
 
     this.validateOperators = function(char) {
         return char === '[' || char === ']' ||
@@ -241,17 +239,24 @@ Ndfa.prototype.validate = (function() {
             char === '|';
     };
 
+    this.validateEnumsLoops = function(regex) {
+        var valid = true;
+        var regexArray = regex.split('|');
+        return valid;
+    };
+
+    this.isValid = function(str) {
+        var valid = false;
+        for(var index = 0; index < str.length; index++) {
+            valid = valid || validateRangeableDigit(str[index]);
+            valid = valid || validateRangeableUpperCase(str[index]);
+            valid = valid || validateRangeableLowerCase(str[index]);
+            valid = valid || validateUnRangeable(str[index]);
+        }
+        return valid;
+    };
+
     return {
-        isValid: function(str) {
-            var validationFuncs = validateRangeable.concat(validateUnRangeable);
-            var valid = false;
-            for (var index = 0; index < validationFuncs.length; index++) {
-                for (var charIndex = 0; charIndex < str.length; charIndex++) {
-                    valid = valid || validationFuncs[index](str.charAt(charIndex));
-                }
-            }
-            return valid;
-        },
         getRange: function(bound1, bound2) {
             var begin = bound1.charCodeAt(0);
             var end = bound2.charCodeAt(0);
@@ -278,17 +283,17 @@ Ndfa.prototype.validate = (function() {
             var valid = true;
 
             for(var index = 0; index < regex.length; index++) {
-                var isValid = this.isValid(regex[index]);
+                var isValidChar = isValid(regex[index]);
                 var isOperator = validateOperators(regex[index]);
-                valid = isValid || isOperator;
+                valid = isValidChar || isOperator;
                 if(!valid) {
                     break;
                 }
             }
 
-            // if(valid) {
-            //
-            // }
+            if(valid) {
+                valid = validateEnumsLoops(regex);
+            }
 
             return valid;
         }
