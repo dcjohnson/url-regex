@@ -242,6 +242,57 @@ Ndfa.prototype.validate = (function() {
     this.validateEnumsLoops = function(regex) {
         var valid = true;
         var regexArray = regex.split('|');
+        var inEnum = false;
+        var inLoop = false;
+
+        for(var index = 0; index < regexArray.length && valid; index++) {
+            var charCount = 0;
+            for(var charIndex = 0; charIndex < regexArray[index].length && valid; charIndex++) {
+                var curChar = regexArray[index][charIndex];
+                if (curChar === '[') {
+                    if (!inEnum && !inLoop) {
+                        inLoop = true;
+                    } else {
+                        valid = false;
+                    }
+                } else if (curChar === '(') {
+                    if (!inEnum && !inLoop) {
+                        inEnum = true;
+                    } else {
+                        valid = false;
+                    }
+                } else if (curChar === ']') {
+                    if (inLoop && (charCount === 1 || charCount === 2)) {
+                        inLoop = false;
+                    } else {
+                        valid = false;
+                    }
+                } else if (curChar === ')') {
+                    if (inEnum && charCount === 1) {
+                        inEnum = false;
+                    } else {
+                        valid = false;
+                    }
+                } else if (inEnum || inLoop) {
+                    if (curChar === '') {
+                        valid = false;
+                    } else {
+                        charCount++;
+                        if (inEnum && charCount > 1) {
+                            valid = false;
+                        } else if (inLoop && charCount > 2) {
+                            valid = false;
+                        }
+                    }
+                }
+            }
+            if (inLoop && (charCount < 1 || charCount > 2)) {
+                valid = false;
+            }
+            if (inEnum && charCount !== 1) {
+                valid = false;
+            }
+        }
         return valid;
     };
 
@@ -304,5 +355,6 @@ exports.Ndfa = Ndfa;
 var n = new Ndfa('abc');
 console.log(n.validate.isValidRegex('abc'));
 console.log(n.validate.isValidRegex('abcab[=]e'));
-console.log(n.validate.isValidRegex('abc[]aed'));
-console.log(n.validate.isValidRegex('abc[aeefsd]eee()aaa'));
+console.log(n.validate.isValidRegex('abc[|z]aed'));
+console.log(n.validate.isValidRegex('abc(|z)aed'));
+console.log(n.validate.isValidRegex('abc[a|e|f|s|d]eeeaaa'));
