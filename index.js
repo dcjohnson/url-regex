@@ -279,7 +279,6 @@ Ndfa.prototype.validate = (function() {
                     } else {
                         charCount++;
                         if (charCount === 2) {
-
                             valid = canRange(regexArray[index][charIndex], regexArray[index][charIndex - 1])
                         }
                         if (inEnum && charCount > 1) {
