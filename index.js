@@ -278,6 +278,10 @@ Ndfa.prototype.validate = (function() {
                         valid = false;
                     } else {
                         charCount++;
+                        if (charCount === 2) {
+
+                            valid = canRange(regexArray[index][charIndex], regexArray[index][charIndex - 1])
+                        }
                         if (inEnum && charCount > 1) {
                             valid = false;
                         } else if (inLoop && charCount > 2) {
@@ -307,6 +311,16 @@ Ndfa.prototype.validate = (function() {
         return valid;
     };
 
+    this.canRange = function(bound1, bound2) {
+        var valid = false;
+
+        valid = valid || validateRangeableDigit(bound1) && validateRangeableDigit(bound2);
+        valid = valid || validateRangeableUpperCase(bound1) && validateRangeableUpperCase(bound2);
+        valid = valid || validateRangeableLowerCase(bound1) && validateRangeableLowerCase(bound2);
+
+        return valid;
+    };
+
     return {
         getRange: function(bound1, bound2) {
             var begin = bound1.charCodeAt(0);
@@ -322,13 +336,6 @@ Ndfa.prototype.validate = (function() {
             }
 
             return charRange;
-        },
-        canRange: function(bound1, bound2) {
-            var valid = false;
-            for (var index = 0; index < validateRangeable.length; index++) {
-                valid = valid || (validateRangeable[index](bound1) && validateRangeable[index](bound2));
-            }
-            return valid;
         },
         isValidRegex: function(regex) {
             var valid = true;
@@ -357,4 +364,4 @@ console.log(n.validate.isValidRegex('abc'));
 console.log(n.validate.isValidRegex('abcab[=]e'));
 console.log(n.validate.isValidRegex('abc[|z]aed'));
 console.log(n.validate.isValidRegex('abc(|z)aed'));
-console.log(n.validate.isValidRegex('abc[a|e|f|s|d]eeeaaa'));
+console.log(n.validate.isValidRegex('abc[a|Aa|f|s|d]eeeaaa'));
