@@ -146,7 +146,7 @@ Ndfa.prototype.processLoop = function(loop, initialState) {
             initialState.addTransition(elem, state);
             state.addTransition(elem, state);
         } else {
-            var range = base.validate.getRange(elem.charAt(0), elem.charAt(1));
+            var range = Validate.getRange(elem.charAt(0), elem.charAt(1));
             initialState.addTransitions(range, state)
             state.addTransitions(range, state);
         }
