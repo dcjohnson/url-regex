@@ -7,10 +7,10 @@
 State = function(isTerm, transitions) {
     this.isTerm = isTerm;
     this.transitions = transitions;
-    if (typeof transitions === 'undefined') {
+    if (transitions) {
         this.transitions = [];
     }
-    if (typeof isTerm === 'undefined') {
+    if (isTerm) {
         this.isTerm = false;
     }
 }
@@ -345,6 +345,10 @@ Validate = (function() {
         }
     };
 })();
+
+var ndfa = new Ndfa('abc[a|b|c][16]3');
+ndfa.generateStates();
+console.log(ndfa.testString('abcabcabcabc11116661234561616613'))
 
 exports.Ndfa = Ndfa;
 exports.Validate = Validate;
