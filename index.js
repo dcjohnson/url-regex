@@ -7,10 +7,10 @@
 State = function(isTerm, transitions) {
     this.isTerm = isTerm;
     this.transitions = transitions;
-    if (transitions) {
+    if (!transitions) {
         this.transitions = [];
     }
-    if (isTerm) {
+    if (!isTerm) {
         this.isTerm = false;
     }
 }
