@@ -1,9 +1,3 @@
-// This node library follows some rules that I think are very reasonable.  Basically it doesn't work on a url that is stupidly complex.
-// There is no need for a url to contain nested loops or enumerations.  The restrictions also mean that loops are the only place where ambiguity, and thus, an NDFA could occur.
-// This library takes this into account and will resolve it for you.
-// I also need to rewrite this so that it follows better design with JavaScript.
-// This is the first reasonable complex JavaScript program I have written.  The only real issue is how I handle errors.
-
 State = function(isTerm, transitions) {
     this.isTerm = isTerm;
     this.transitions = transitions;
