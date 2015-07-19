@@ -1,6 +1,6 @@
 {
   "name": "tiny-url-regex",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A regex library for url routing.",
   "main": "index.js",
   "scripts": {
